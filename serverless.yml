@@ -1,0 +1,143 @@
+# Welcome to Serverless!
+#
+# This file is the main config file for your service.
+# It's very minimal at this point and uses default values.
+# You can always add more config options for more control.
+# We've included some commented out config examples here.
+# Just uncomment any of them to get that config option.
+#
+# For full config options, check the docs:
+#    docs.serverless.com
+#
+# Happy Coding!
+
+service: f10-cdn-SVL
+
+# You can pin your service to only deploy with a specific Serverless version
+# Check out our docs for more details
+# frameworkVersion: "=X.X.X"
+custom:
+  client: rcwdl
+  bucketName: ${self:custom.client}-assets--svl
+  snsTrigger: arn:aws:sns:eu-west-1:547637678216:git-deploy
+  sendGridTemplate: f8f93875-c0e1-4737-9f72-5bcca2af3241
+  auth: ${file(./env.yml):auths}
+  GITHUB_WEBHOOK_SECRET: ${file(./env.yml):GITHUB_WEBHOOK_SECRET}
+  GITHUB_API_TOKEN: ${file(./env.yml):GITHUB_API_TOKEN}
+
+provider:
+  name: aws
+  timeout: 300
+  runtime: nodejs6.10
+  region: eu-west-1
+  profile: f10aws
+  role: arn:aws:iam::547637678216:role/RC-Git-deployment
+#  iamRoleStatements:
+#    - Effect: Allow
+#      Action:
+#        - s3:PutObject
+#      Resource: { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "RCWDL-assets-svl" } ] ] }
+
+# you can overwrite defaults here
+#  stage: dev
+#  region: us-east-1
+
+# you can define service wide environment variables here
+#  environment:
+#    variable1: value1
+
+# you can add packaging information here
+#package:
+#  include:
+#    - include-me.js
+#    - include-me-dir/**
+#  exclude:
+#    - exclude-me.js
+#    - exclude-me-dir/**
+
+functions:
+  GithubDeploymnet--SVL:
+    handler: githubs3.handler
+    name: githubToS3-SVL
+    tags:
+      client: royal canin
+      application: lambda
+      project: github to s3 deployment
+    environment:
+          BUCKET: ${self:custom.bucketName}
+          API: https://mq729lwmq0.execute-api.eu-west-1.amazonaws.com/dev
+          EMAIL_TEMPLATE: ${self:custom.sendGridTemplate}
+          SEGMENT: "Royal Canin Developers"
+
+#    The following are a few example events you can configure
+#    NOTE: Please make sure to change your handler code to work with those events
+#    Check the event documentation for details
+    events:
+#      - http:
+#          path: users/create
+#          method: get
+#      - s3: ${env:BUCKET}
+#      - schedule: rate(10 minutes)
+       - sns: ${self:custom.snsTrigger}
+#      - stream: arn:aws:dynamodb:region:XXXXXX:table/foo/stream/1970-01-01T00:00:00.000
+#      - alexaSkill
+#      - iot:
+#          sql: "SELECT * FROM 'some_topic'"
+#      - cloudwatchEvent:
+#          event:
+#            source:
+#              - "aws.ec2"
+#            detail-type:
+#              - "EC2 Instance State-change Notification"
+#            detail:
+#              state:
+#                - pending
+#      - cloudwatchLog: '/aws/lambda/hello'
+#      - cognitoUserPool:
+#          pool: MyUserPool
+#          trigger: PreSignUp
+
+#    Define function environment variables here
+#    environment:
+#      variable2: value2
+  cloudfrontCDNServerSVL:
+    handler: s3cdn.handler
+    name: cloudFrontToCDN-SVL
+    tags:
+      client: royal canin
+      application: lambda
+      project: s3 to cloudfront
+    environment:
+      BUCKET: ${self:custom.bucketName}
+
+  gitHubHookToS3:
+    handler: gitHubHookToS3.handler
+    environment:
+      auth: ${self:custom.auth} # This passes the values stored in you .env file into your lambda function.
+      GITHUB_WEBHOOK_SECRET: ${self:custom.GITHUB_WEBHOOK_SECRET}
+      BUCKET: ${self:custom.bucketName}
+    name: gitHubHookToS3
+    description: Lambda function used to deploy assets to S3.
+    tags:
+      client: royal canin
+      application: lambda
+      project: design language
+    events:
+      - http:
+          path: f10github/royal-canin-design-language-portal
+          method: post
+          integration: LAMBDA
+          cors: true
+# you can add CloudFormation resource templates here
+resources:
+  Resources:
+    AssetBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: ${self:custom.bucketName}
+
+#  Outputs:
+#     NewOutput:
+#       Description: "Description for the output"
+#       Value: "Some output value"
+#         rcGithubDeploymnet:

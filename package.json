@@ -1,0 +1,36 @@
+{
+  "name": "aws-cdn",
+  "version": "1.0.0",
+  "description": "",
+  "main": "handler.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "babel": "babel gitHubHookToS3-raw.js --out-file gitHubHookToS3.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/First10/AWS-cdn.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "aws-sdk": "^2.77.0"
+  },
+  "dependencies": {
+    "node-slack": "0.0.7",
+    "request": "^2.81.0",
+    "serverless_githook_to_s3": "git+https://github.com/jmdrawneek/serverless_githook_to_s3.git",
+    "babel-cli": "^6.26.0",
+    "babel-plugin-add-header-comment": "^1.0.3",
+    "babel-plugin-array-includes": "^2.0.3",
+    "babel-plugin-transform-es2017-object-entries": "0.0.4",
+    "babel-plugin-transform-object-rest-spread": "^6.26.0",
+    "babel-preset-env": "^1.6.1",
+    "babel-preset-es2015": "^6.24.1"
+  },
+  "bugs": {
+    "url": "https://github.com/First10/AWS-cdn/issues"
+  },
+  "homepage": "https://github.com/First10/AWS-cdn#readme"
+}
